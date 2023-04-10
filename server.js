@@ -1,11 +1,39 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const path = require("path");
+const { logger, logEvents } = require("./middleware/logger");
+const errorHandler = require("./middleware/errorHandler");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const corsOptions = require("./config/corsOptions");
+const connectDB = require("./config/dbConn");
+const mongoose = require("mongoose");
+
 const PORT = process.env.PORT || 3500;
 
-app.use("/", express.static(path.join(__dirname, "/public")));
+connectDB();
+
+app.use(logger);
+
+app.use(cors(corsOptions));
+
+app.use(express.json());
+
+app.use(cookieParser());
+
+app.use("/", express.static("public"));
 
 app.use("/", require("./routes/root"));
+
+app.use("/teacher", require("./routes/teacherRoutes"));
+app.use("/student", require("./routes/studentRoutes"));
+app.use("/internal", require("./routes/internalRoutes"));
+app.use("/attendance", require("./routes/attendanceRoutes"));
+app.use("/batch", require("./routes/batchRoutes"));
+app.use("/paper", require("./routes/paperRoutes"));
+app.use("/time_schedule", require("./routes/timeScheduleRoutes"));
+// app.use("/note", require("./routes/tempRoutes"));
 
 app.all("*", (req, res) => {
   res.status(404);
@@ -18,4 +46,21 @@ app.all("*", (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
+app.use(errorHandler);
+
+mongoose.connection.once("open", () => {
+  console.log("Connected to MongoDB");
+  app.listen(PORT, () => console.log(`server running on PORT ${PORT}`));
+});
+
+mongoose.connection.on("error", (err) => {
+  console.log(err);
+  logEvents(
+    `${err.no}:${err.code}\t${err.syscall}\t${err.hostname}`,
+    "mongoErrLog.log"
+  );
+});
+
+mongoose.connection.on("uncaughtException", function (err) {
+  console.log(err);
+});
