@@ -1,6 +1,6 @@
 # ToDo List for the Project
 
-## ROLES and Access
+## Roles and Access
 
 ### Teacher
 
@@ -8,11 +8,6 @@
 2. [ ] Update Profile
 3. [ ] Provide Internal Mark, Attendance, Syllabus, Notes
 4. [ ] View Attendance, Syllabus, Subject Distribution, Time Schedule, Internal Mark
-
-### Advisor
-
-1. [ ] Register Student of their own class
-2. [ ] View Student Details [Attendance, Internal Mark, Time Schedule, Subject Distribution] of class
 
 ### HOD
 

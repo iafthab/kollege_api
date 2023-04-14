@@ -6,20 +6,30 @@ const paperSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  semester: {
+    type: String,
+    required: true,
+  },
+  year: {
+    type: String,
+    required: true,
+  },
   paper: {
     type: String,
     required: true,
   },
-  batches: [
+  students: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Batch",
+      ref: "Student",
     },
   ],
-  teachers: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Teacher",
-  },
+  teachers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Teacher",
+    },
+  ],
 });
 
 module.exports = mongoose.model("Paper", paperSchema);

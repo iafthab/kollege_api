@@ -6,8 +6,10 @@ const paperController = require("./../controllers/paperController");
 // router.route('/:paper')
 // .get()
 
+router.route("/:teacherId").get(paperController.getPapers);
+
 router
-  .route("/:paper")
+  .route("/paper/:paper")
   .get(paperController.getPaper)
   .post(paperController.addPaper)
   .patch(paperController.updatePaper)

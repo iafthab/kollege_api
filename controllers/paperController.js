@@ -4,11 +4,28 @@ const asyncHandler = require("express-async-handler");
 // @desc Get Paper for each Paper
 // @route GET /Paper
 // @access Everyone
+const getPapers = async (req, res) => {
+  if (!req?.params?.teacherId) {
+    return res.status(400).json({ message: "Teacher ID Missing" });
+  }
+  const papers = await Paper.find({
+    teachers: req.params.teacherId,
+  }).exec();
+  if (!papers) {
+    return res.status(404).json({
+      message: `No Paper found for ${req.params.teacherId}`,
+    });
+  }
+  res.json(papers);
+};
+
+// @desc Get Paper for each Paper
+// @route GET /Paper
+// @access Everyone
 const getPaper = async (req, res) => {
   if (
     !req?.params?.paper ||
     !req?.params?.department ||
-    !req?.params?.batches ||
     !req?.params?.teachers
   ) {
     return res
@@ -18,7 +35,7 @@ const getPaper = async (req, res) => {
   const paper = await Paper.find({
     department: req.params.department,
     paper: req.params.paper,
-    batches: req.params.batches,
+    students: req.params.students,
     teachers: req.params.teachers,
   }).exec();
   if (!paper) {
@@ -33,10 +50,10 @@ const getPaper = async (req, res) => {
 // @route POST /Paper
 // @access Private
 const addPaper = asyncHandler(async (req, res) => {
-  const { department, paper, batches, teachers } = req.body;
+  const { department, paper, students, teachers } = req.body;
 
   // Confirm Data
-  if (!department || !paper || !batches || !teachers) {
+  if (!department || !paper || !students || !teachers) {
     return res
       .status(400)
       .json({ message: "Incomplete Request: Fields Missing" });
@@ -46,7 +63,7 @@ const addPaper = asyncHandler(async (req, res) => {
   const duplicate = await Paper.findOne({
     department: req.params.department,
     paper: req.params.paper,
-    batches: req.params.batches,
+    students: req.params.students,
     teachers: req.params.teachers,
   })
     .lean()
@@ -59,7 +76,7 @@ const addPaper = asyncHandler(async (req, res) => {
   const PaperObj = {
     department,
     paper,
-    batches,
+    students,
     teachers,
   };
 
@@ -80,10 +97,10 @@ const addPaper = asyncHandler(async (req, res) => {
 // @route PATCH /Paper
 // @access Private
 const updatePaper = asyncHandler(async (req, res) => {
-  const { id, department, paper, batches, teachers } = req.body;
+  const { id, department, paper, students, teachers } = req.body;
 
   // Confirm Data
-  if (!id || !department || !paper || !batches || !teachers) {
+  if (!id || !department || !paper || !students || !teachers) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -99,7 +116,7 @@ const updatePaper = asyncHandler(async (req, res) => {
   const duplicate = await Paper.findOne({
     department: req.params.department,
     paper: req.params.paper,
-    batches: req.params.batches,
+    students: req.params.students,
     teachers: req.params.paper,
   })
     .lean()
@@ -112,7 +129,7 @@ const updatePaper = asyncHandler(async (req, res) => {
 
   record.department = department;
   record.paper = paper;
-  record.batches = batches;
+  record.students = students;
   record.teachers = teachers;
 
   const save = await record.save();
@@ -147,6 +164,7 @@ const deletePaper = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getPapers,
   getPaper,
   addPaper,
   updatePaper,

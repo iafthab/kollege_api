@@ -3,11 +3,6 @@ const mongoose = require("mongoose");
 
 // Student Details
 const studentSchema = new mongoose.Schema({
-  admission_no: {
-    type: String,
-    required: true,
-    unique: true,
-  },
   name: {
     type: String,
     required: true,
@@ -28,9 +23,17 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  batch: {
+  papers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: Paper,
+      default: [],
+    },
+  ],
+  admission_no: {
     type: String,
     required: true,
+    unique: true,
   },
   password: {
     type: String,

@@ -16,17 +16,19 @@ const attendanceSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    attendance: {
-      student: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: "Student",
+    attendance: [
+      {
+        student: {
+          type: mongoose.Schema.Types.ObjectId,
+          required: true,
+          ref: "Student",
+        },
+        present: {
+          type: Boolean,
+          default: "true",
+        },
       },
-      present: {
-        type: Boolean,
-        default: "true",
-      },
-    },
+    ],
   },
   {
     timestamps: true,
