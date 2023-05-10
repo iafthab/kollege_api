@@ -1,27 +1,20 @@
 const mongoose = require("mongoose");
 
 // Internal Result of Students
-const internalResultSchema = new mongoose.Schema({
-  batch: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Batch",
-  },
+const internalSchema = new mongoose.Schema({
   paper: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Paper",
   },
   marks: [
     {
-      student: {
+      _id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Student",
         required: true,
       },
-      internal1: {
-        type: Number,
-        required: true,
-      },
-      internal2: {
+      name: String,
+      test: {
         type: Number,
         required: true,
       },
@@ -45,4 +38,4 @@ const internalResultSchema = new mongoose.Schema({
   ],
 });
 
-module.exports = mongoose.model("Internal_Result", internalResultSchema);
+module.exports = mongoose.model("Internal", internalSchema);

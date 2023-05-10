@@ -5,19 +5,21 @@ const asyncHandler = require("express-async-handler");
 // @route GET /attendance
 // @access Everyone
 const getAttendance = async (req, res) => {
-  if (!req?.params?.class || !req?.params?.date || !req?.params?.hour) {
+  if (!req?.params?.paper || !req?.params?.date || !req?.params?.hour) {
     return res
       .status(400)
       .json({ message: "Incomplete Request: Params Missing" });
   }
   const attendance = await Attendance.findOne({
-    batch: req.params.batch,
+    paper: req.params.paper,
     date: req.params.date,
     hour: req.params.hour,
-  }).exec();
+  })
+    .populate({ path: "attendance.student", select: "name" })
+    .exec();
   if (!attendance) {
     return res.status(404).json({
-      message: `No Attendance Record found for ${req.params.batch} on ${req.params.date} ${req.params.hour} hour`,
+      message: `No Attendance Record found. Add New`,
     });
   }
   res.json(attendance);
@@ -27,18 +29,18 @@ const getAttendance = async (req, res) => {
 // @route POST /attendance
 // @access Private
 const addAttendance = asyncHandler(async (req, res) => {
-  const { batch, date, hour, attendance } = req.body;
+  const { paper, date, hour, attendance } = req.body;
 
   // Confirm Data
-  if (!batch || !date || !hour || !attendance) {
+  if (!paper || !date || !hour || !attendance) {
     return res
       .status(400)
-      .json({ message: "Incomplete Request: Params Missing" });
+      .json({ message: "Incomplete Request: Body Missing" });
   }
 
   // Check for Duplicates
   const duplicate = await Attendance.findOne({
-    class: req.params.batch,
+    paper: req.params.paper,
     date: req.params.date,
     hour: req.params.hour,
   })
@@ -52,7 +54,7 @@ const addAttendance = asyncHandler(async (req, res) => {
   }
 
   const attendanceObj = {
-    batch,
+    paper,
     date,
     hour,
     attendance,
@@ -60,11 +62,10 @@ const addAttendance = asyncHandler(async (req, res) => {
 
   // Create and Store New teacher
   const record = await Attendance.create(attendanceObj);
-  console.log(record);
 
   if (record) {
     res.status(201).json({
-      message: `New Attendance Record for ${req.params.batch} on ${req.params.date} ${req.params.hour} hour Added`,
+      message: `Attendance Record Added`,
     });
   } else {
     res.status(400).json({ message: "Invalid data received" });
@@ -75,10 +76,10 @@ const addAttendance = asyncHandler(async (req, res) => {
 // @route PATCH /attendance
 // @access Private
 const updateAttendance = asyncHandler(async (req, res) => {
-  const { id, batch, date, hour, attendance } = req.body;
+  const { id, paper, date, hour, attendance } = req.body;
 
   // Confirm Data
-  if (!id || !batch || !date || !hour || !attendance) {
+  if (!id || !paper || !date || !hour || !attendance) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -91,7 +92,7 @@ const updateAttendance = asyncHandler(async (req, res) => {
 
   //   // Check for duplicate
   //   const duplicate = await Teacher.findOne({
-  //     class: req.params.batch,
+  //     paper: req.params.paper,
   //     date: req.params.date,
   //     hour: req.params.hour,
   //   })
@@ -103,7 +104,7 @@ const updateAttendance = asyncHandler(async (req, res) => {
   //     return res.status(409).json({ message: "Duplicate Username" });
   //   }
 
-  record.batch = batch;
+  record.paper = paper;
   record.date = date;
   record.hour = hour;
   record.attendance = attendance;
@@ -111,7 +112,7 @@ const updateAttendance = asyncHandler(async (req, res) => {
   const save = await record.save();
   if (save) {
     res.json({
-      message: `${req.params.batch} on ${req.params.date} ${req.params.hour} hour Record Updated`,
+      message: `Attendance Record Updated`,
     });
   } else {
     res.json({ message: "Save Failed" });
@@ -122,13 +123,11 @@ const updateAttendance = asyncHandler(async (req, res) => {
 // @route DELETE /Teacher
 // @access Private
 const deleteAttendance = asyncHandler(async (req, res) => {
-  const { id } = req.body;
-
-  if (!id) {
+  if (!req?.params?.id) {
     return res.status(400).json({ message: "Attendance ID required" });
   }
 
-  const record = await Attendance.findById(id).exec();
+  const record = await Attendance.findById(req.params.id).exec();
 
   if (!record) {
     return res.status(404).json({ message: "Attendance Record not found" });
@@ -136,9 +135,7 @@ const deleteAttendance = asyncHandler(async (req, res) => {
 
   await record.deleteOne();
 
-  res.json({
-    message: `Attendance Record found for ${record.batch} on ${record.date} ${record.hour} hour deleted`,
-  });
+  res.json({ message: "Attendance Record deleted" });
 });
 
 module.exports = {

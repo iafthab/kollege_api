@@ -13,33 +13,33 @@ const getAllTeachers = asyncHandler(async (req, res) => {
   res.json(teachers);
 });
 
+// @desc Get Teacher Names only
+// @route GET /TeachersList
+// @access Private
+const getTeacherList = asyncHandler(async (req, res) => {
+  const teachersList = await Teacher.find().select("name").lean();
+  if (!teachersList?.length) {
+    return res.status(400).json({ message: "No Teacher(s) Found" });
+  }
+  res.json(teachersList);
+});
+
 // @desc Create New Teacher
 // @route POST /Teacher
 // @access Private
 const createNewTeacher = asyncHandler(async (req, res) => {
-  const {
-    username,
-    name,
-    email,
-    phone,
-    qualification,
-    department,
-    password,
-    roles,
-    advisor,
-  } = req.body;
+  const { username, name, email, qualification, department, password, roles } =
+    req.body;
+  console.log(req.body);
 
   // Confirm Data
   if (
     !username ||
     !name ||
     !email ||
-    !phone ||
     !qualification ||
     !department ||
-    !password ||
-    !Array.isArray(roles) ||
-    !roles.length
+    !password
   ) {
     return res.status(400).json({ message: "All fields are required" });
   }
@@ -58,12 +58,10 @@ const createNewTeacher = asyncHandler(async (req, res) => {
     username,
     name,
     email,
-    phone,
     qualification,
     department,
     password: hashedPwd,
     roles,
-    advisor,
   };
 
   // Create and Store New teacher
@@ -86,12 +84,10 @@ const updateTeacher = asyncHandler(async (req, res) => {
     username,
     name,
     email,
-    phone,
     qualification,
     department,
     password,
     roles,
-    advisor,
   } = req.body;
 
   // Confirm Data
@@ -100,10 +96,8 @@ const updateTeacher = asyncHandler(async (req, res) => {
     !username ||
     !name ||
     !email ||
-    !phone ||
     !qualification ||
     !department ||
-    !advisor ||
     !Array.isArray(roles) ||
     !roles.length
   ) {
@@ -128,11 +122,9 @@ const updateTeacher = asyncHandler(async (req, res) => {
   teacher.username = username;
   teacher.name = name;
   teacher.email = email;
-  teacher.phone = phone;
   teacher.qualification = qualification;
   teacher.department = department;
   teacher.roles = roles;
-  teacher.advisor = advisor;
 
   if (password) {
     // Hash Pwd
@@ -167,6 +159,7 @@ const deleteTeacher = asyncHandler(async (req, res) => {
 
 module.exports = {
   getAllTeachers,
+  getTeacherList,
   createNewTeacher,
   updateTeacher,
   deleteTeacher,

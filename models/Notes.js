@@ -1,14 +1,9 @@
 const mongoose = require("mongoose");
-const AutoIncrement = require("mongoose-sequence")(mongoose);
+// const AutoIncrement = require("mongoose-sequence")(mongoose);
 
 // Notes for Student
 const notesSchema = new mongoose.Schema(
   {
-    batch: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Batch",
-      required: true,
-    },
     paper: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Paper",

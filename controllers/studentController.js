@@ -1,12 +1,35 @@
 const Student = require("./../models/Student");
+const Paper = require("./../models/Paper");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
+
+// @desc Get all Student
+// @route GET /Student/list/:paperId
+// @access Private
+const getStudentsList = asyncHandler(async (req, res) => {
+  if (!req?.params?.paperId) {
+    return res
+      .status(400)
+      .json({ message: "Incomplete Request: Params Missing" });
+  }
+
+  const students = await Paper.find({ _id: req.params.paperId })
+    .select("students")
+    .populate({ path: "students", select: "name" })
+    .exec();
+  console.log(students);
+  if (!students?.length) {
+    return res.status(400).json({ message: "No Students Found" });
+  }
+  res.json(students);
+});
 
 // @desc Get all Student
 // @route GET /Student
 // @access Private
 const getAllStudents = asyncHandler(async (req, res) => {
   const students = await Student.find().select("-password").lean();
+  console.log(students);
   if (!students?.length) {
     return res.status(400).json({ message: "No Students Found" });
   }
@@ -17,49 +40,28 @@ const getAllStudents = asyncHandler(async (req, res) => {
 // @route POST /Student
 // @access Private
 const createNewStudent = asyncHandler(async (req, res) => {
-  const {
-    admission_no,
-    name,
-    email,
-    phone,
-    department,
-    course,
-    batch,
-    password,
-  } = req.body;
+  const { papers, name, email, username, password } = req.body;
 
   // Confirm Data
-  if (
-    !admission_no ||
-    !name ||
-    !email ||
-    !phone ||
-    !department ||
-    !course ||
-    !batch ||
-    !password
-  ) {
+  if (!name || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   // Check for Duplicates
-  const duplicate = await Student.findOne({ admission_no }).lean().exec();
+  const duplicate = await Student.findOne({ username }).lean().exec();
 
   if (duplicate) {
-    return res.status(409).json({ message: "Duplicate Admission Number" });
+    return res.status(409).json({ message: "Duplicate Username" });
   }
 
   // Hash Password
   const hashedPwd = await bcrypt.hash(password, 10); // salt rounds
 
   const studentObj = {
-    admission_no,
+    papers,
     name,
     email,
-    phone,
-    department,
-    course,
-    batch,
+    username,
     password: hashedPwd,
   };
 
@@ -67,7 +69,7 @@ const createNewStudent = asyncHandler(async (req, res) => {
   const student = await Student.create(studentObj);
 
   if (student) {
-    res.status(201).json({ message: `New Student ${admission_no} created` });
+    res.status(201).json({ message: `New Student ${name} created` });
   } else {
     res.status(400).json({ message: "Invalid data received" });
   }
@@ -77,29 +79,10 @@ const createNewStudent = asyncHandler(async (req, res) => {
 // @route PATCH /Student
 // @access Private
 const updateStudent = asyncHandler(async (req, res) => {
-  const {
-    id,
-    admission_no,
-    name,
-    email,
-    phone,
-    department,
-    course,
-    batch,
-    password,
-  } = req.body;
+  const { papers, name, email, username, password } = req.body;
 
   // Confirm Data
-  if (
-    !id ||
-    !admission_no ||
-    !name ||
-    !email ||
-    !phone ||
-    !department ||
-    !course ||
-    !batch
-  ) {
+  if (!name || !email || !username) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -111,20 +94,17 @@ const updateStudent = asyncHandler(async (req, res) => {
   }
 
   // Check for duplicate
-  const duplicate = await Student.findOne({ admission_no }).lean().exec();
+  const duplicate = await Student.findOne({ username }).lean().exec();
 
   // Allow Updates to original
   if (duplicate && duplicate?._id.toString() !== id) {
-    return res.status(409).json({ message: "Duplicate Admission Number" });
+    return res.status(409).json({ message: "Duplicate Username" });
   }
 
-  student.admission_no = admission_no;
   student.name = name;
   student.email = email;
-  student.phone = phone;
-  student.course = course;
-  student.department = department;
-  student.batch = batch;
+  student.username = username;
+  student.papers = papers;
 
   if (password) {
     // Hash Pwd
@@ -154,10 +134,11 @@ const deleteStudent = asyncHandler(async (req, res) => {
 
   const result = await student.deleteOne();
 
-  res.json({ message: `${result.admission_no} deleted` });
+  res.json({ message: `${result.username} deleted` });
 });
 
 module.exports = {
+  getStudentsList,
   getAllStudents,
   createNewStudent,
   updateStudent,

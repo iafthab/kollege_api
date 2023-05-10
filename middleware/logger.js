@@ -1,4 +1,3 @@
-const { format } = require("date-fns");
 const { v4: uuid } = require("uuid");
 const fs = require("fs");
 const fsPromises = require("fs").promises;
@@ -6,8 +5,18 @@ const path = require("path");
 const { createHash } = require("crypto");
 const { log } = require("console");
 
+const date = new Date();
+const options = {
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+  second: "numeric",
+};
+
 const logEvents = async (message, logFileName) => {
-  const dateTime = format(new Date(), "yyMMdd\tHH:mm:ss");
+  const dateTime = new Intl.DateTimeFormat("en-GB", options).format(date);
   const logItem = dateTime + "\t" + uuid() + "\t" + message + "\n";
 
   try {

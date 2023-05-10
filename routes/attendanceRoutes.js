@@ -7,10 +7,11 @@ const attendanceController = require("./../controllers/attendanceController");
 // .get()
 
 router
-  .route("/:batch/:date/:hour")
+  .route("/:paper/:date/:hour")
   .get(attendanceController.getAttendance)
   .post(attendanceController.addAttendance)
-  .patch(attendanceController.updateAttendance)
-  .delete(attendanceController.deleteAttendance);
+  .patch(attendanceController.updateAttendance);
+
+router.route("/:id").delete(attendanceController.deleteAttendance);
 
 module.exports = router;

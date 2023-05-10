@@ -2,12 +2,8 @@ const express = require("express");
 const router = express.Router();
 const timeScheduleController = require("./../controllers/timeScheduleController");
 
-// TODO Student Side
-// router.route('/:time')
-// .get()
-
 router
-  .route("/:id")
+  .route("/:teacher_id")
   .get(timeScheduleController.getTimeSchedule)
   .post(timeScheduleController.addTimeSchedule)
   .patch(timeScheduleController.updateTimeSchedule)

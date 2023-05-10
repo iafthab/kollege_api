@@ -37,13 +37,6 @@ const daySchema = new mongoose.Schema({
       default: [],
     },
   ],
-  saturday: [
-    {
-      type: String,
-      required: true,
-      default: [],
-    },
-  ],
 });
 
 // Time Schedule of the Teacher
@@ -53,11 +46,7 @@ const timeScheduleSchema = new mongoose.Schema({
     required: true,
     ref: "Teacher",
   },
-  teacher_id: {
-    type: String,
-    required: true,
-  },
-  schedule: [daySchema],
+  schedule: daySchema,
 });
 
 module.exports = mongoose.model("Time_Schedule", timeScheduleSchema);

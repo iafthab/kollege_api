@@ -1,22 +1,21 @@
-const Internal = require("./../models/InternalResult");
+const Internal = require("./../models/Internal");
 const asyncHandler = require("express-async-handler");
 
 // @desc Get Internal Result
-// @route GET /internal/:class/:paper
+// @route GET /internal/:paper
 // @access Everyone
 const getInternal = async (req, res) => {
-  if (!req?.params?.batch || !req?.params?.paper) {
+  if (!req?.params?.paper) {
     return res
       .status(400)
       .json({ message: "Incomplete Request: Params Missing" });
   }
   const internal = await Internal.findOne({
-    batch: req.params.batch,
     paper: req.params.paper,
   }).exec();
   if (!internal) {
     return res.status(404).json({
-      message: `No Internal Record found for ${req.params.batch} in ${req.params.paper}`,
+      message: "No Existing Records found. Add New Records",
     });
   }
   res.json(internal);
@@ -26,40 +25,33 @@ const getInternal = async (req, res) => {
 // @route POST /Internal
 // @access Private
 const addInternal = asyncHandler(async (req, res) => {
-  const { batch, paper, marks } = req.body;
+  const { paper, marks } = req.body;
 
   // Confirm Data
-  if (!batch || !paper || !marks) {
+  if (!paper || !marks) {
     return res
       .status(400)
       .json({ message: "Incomplete Request: Fields Missing" });
   }
-
   // Check for Duplicates
   const duplicate = await Internal.findOne({
-    batch: req.params.batch,
     paper: req.params.paper,
   })
     .lean()
     .exec();
-
   if (duplicate) {
     return res.status(409).json({ message: "Internal record already exists" });
   }
 
   const InternalObj = {
-    batch,
     paper,
     marks,
   };
-
   // Create and Store New teacher
   const record = await Internal.create(InternalObj);
-  console.log(record);
-
   if (record) {
     res.status(201).json({
-      message: `Internal Record for ${req.params.batch} on ${req.params.paper} Added`,
+      message: `Internal Record  Added`,
     });
   } else {
     res.status(400).json({ message: "Invalid data received" });
@@ -70,23 +62,21 @@ const addInternal = asyncHandler(async (req, res) => {
 // @route PATCH /Internal
 // @access Private
 const updateInternal = asyncHandler(async (req, res) => {
-  const { id, batch, paper, marks } = req.body;
+  const { id, paper, marks } = req.body;
 
   // Confirm Data
-  if (!id || !batch || !paper || !marks) {
+  if (!id || !paper || !marks) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   // Find Record
   const record = await Internal.findById(id).exec();
-
   if (!record) {
     return res.status(404).json({ message: "Internal record doesn't exist" });
   }
 
   // Check for duplicate
   const duplicate = await Internal.findOne({
-    batch: req.params.batch,
     paper: req.params.paper,
   })
     .lean()
@@ -96,15 +86,12 @@ const updateInternal = asyncHandler(async (req, res) => {
   if (duplicate && duplicate?._id.toString() !== id) {
     return res.status(409).json({ message: "Duplicate Username" });
   }
-
-  record.batch = batch;
   record.paper = paper;
   record.marks = marks;
-
   const save = await record.save();
   if (save) {
     res.json({
-      message: `${req.params.batch}'s ${req.params.paper} Internal Record Updated`,
+      message: ` Internal Record Updated`,
     });
   } else {
     res.json({ message: "Save Failed" });
@@ -122,15 +109,13 @@ const deleteInternal = asyncHandler(async (req, res) => {
   }
 
   const record = await Internal.findById(id).exec();
-
   if (!record) {
     return res.status(404).json({ message: "Internal Record not found" });
   }
 
   await record.deleteOne();
-
   res.json({
-    message: `Internal Record found for ${record.batch} on ${record.papaer} deleted`,
+    message: `Internal Record deleted`,
   });
 });
 

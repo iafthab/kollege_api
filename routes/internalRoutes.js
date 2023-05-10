@@ -6,9 +6,8 @@ const internalController = require("./../controllers/internalController");
 // router.route('/class')
 // get result of every course
 // .get()
-
 router
-  .route("/:batch/:course")
+  .route("/:paper")
   .get(internalController.getInternal)
   .post(internalController.addInternal)
   .patch(internalController.updateInternal)

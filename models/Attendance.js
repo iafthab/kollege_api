@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 // Attendance of Students
 const attendanceSchema = new mongoose.Schema(
   {
-    batch: {
+    paper: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Class",
+      ref: "Paper",
       required: true,
     },
     date: {

@@ -5,15 +5,15 @@ const asyncHandler = require("express-async-handler");
 // @route GET /TimeSchedule
 // @access Everyone
 const getTimeSchedule = async (req, res) => {
-  if (!req?.params?.id) {
+  if (!req?.params?.teacher_id) {
     return res.status(400).json({ message: "ID Required" });
   }
   const timeSchedule = await TimeSchedule.findOne({
-    teacher_id: req.params.teacher_id,
+    teacher: req.params.teacher_id,
   }).exec();
   if (!timeSchedule) {
     return res.status(404).json({
-      message: `No TimeSchedule found for ${req.params.teacher_id}`,
+      message: `No TimeSchedule found for ${req.params.id}`,
     });
   }
   res.json(timeSchedule);
@@ -23,10 +23,10 @@ const getTimeSchedule = async (req, res) => {
 // @route POST /time_Schedule
 // @access Private
 const addTimeSchedule = asyncHandler(async (req, res) => {
-  const { teacher, teacher_id, schedule } = req.body;
+  const { teacher, schedule } = req.body;
 
   // Confirm Data
-  if (!teacher || !teacher_id || !schedule) {
+  if (!teacher || !schedule) {
     return res
       .status(400)
       .json({ message: "Incomplete Request: Fields Missing" });
@@ -34,7 +34,7 @@ const addTimeSchedule = asyncHandler(async (req, res) => {
 
   // Check for Duplicates
   const duplicate = await TimeSchedule.findOne({
-    teacher_id: req.params.teacher_id,
+    teacher: teacher,
   })
     .lean()
     .exec();
@@ -45,7 +45,6 @@ const addTimeSchedule = asyncHandler(async (req, res) => {
 
   const TimeScheduleObj = {
     teacher,
-    teacher_id,
     schedule,
   };
 
@@ -55,7 +54,7 @@ const addTimeSchedule = asyncHandler(async (req, res) => {
 
   if (record) {
     res.status(201).json({
-      message: `TimeSchedule added for ${req.params.teacher}`,
+      message: `TimeSchedule added successfully`,
     });
   } else {
     res.status(400).json({ message: "Invalid data received" });
@@ -66,39 +65,37 @@ const addTimeSchedule = asyncHandler(async (req, res) => {
 // @route PATCH /TimeSchedule
 // @access Private
 const updateTimeSchedule = asyncHandler(async (req, res) => {
-  const { id, teacher, teacher_id, schedule } = req.body;
+  const { teacher, schedule } = req.body;
 
   // Confirm Data
-  if (!id || !teacher || !teacher_id || !schedule) {
+  if (!teacher || !schedule) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   // Find Record
-  const record = await TimeSchedule.findById(id).exec();
+  const record = await TimeSchedule.findOne({ teacher: teacher }).exec();
 
   if (!record) {
     return res.status(404).json({ message: "Time Schedule doesn't exist" });
   }
 
-  //   // Check for duplicate
-  //   const duplicate = await TimeSchedule.findOne({
-  //     teacher_id: req.params.teacher_id,
-  //   })
-  //     .lean()
-  //     .exec();
+  // // Check for duplicate
+  // const duplicate = await TimeSchedule.findOne({
+  //   teacher_id: req.params.teacher_id,
+  // })
+  //   .lean()
+  //   .exec();
 
-  //   // Allow Updates to original
-  //   if (duplicate && duplicate?._id.toString() !== id) {
-  //     return res.status(409).json({ message: "Duplicate Time Schedule" });
-  //   }
+  // // Allow Updates to original
+  // if (duplicate && duplicate?._id.toString() !== id) {
+  //   return res.status(409).json({ message: "Duplicate Time Schedule" });
+  // }
 
-  record.teacher = teacher;
-  record.teacher_id = teacher_id;
   record.schedule = schedule;
 
   const save = await record.save();
   if (save) {
-    res.json({ message: `Note Updated` });
+    res.json({ message: `Schedule Updated` });
   } else {
     res.json({ message: "Save Failed" });
   }
@@ -108,12 +105,11 @@ const updateTimeSchedule = asyncHandler(async (req, res) => {
 // @route DELETE /time_schedule
 // @access Private
 const deleteTimeSchedule = asyncHandler(async (req, res) => {
-  const { id } = req.body;
-
-  if (!id) {
-    return res.status(400).json({ message: "ID required" });
+  if (!req?.params?.teacher_id) {
+    return res.status(400).json({ message: "ID Required" });
   }
-  const record = await TimeSchedule.findById(id).exec();
+
+  const record = await TimeSchedule.findById(req.params.teacher_id).exec();
   if (!record) {
     return res.status(404).json({ message: "Time Schedule not found" });
   }

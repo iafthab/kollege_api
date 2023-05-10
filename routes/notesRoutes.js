@@ -7,9 +7,12 @@ const notesController = require("./../controllers/notesController");
 // .get()
 
 router
-  .route("/:batch/:paper")
+  .route("/paper/:paperId")
   .get(notesController.getNotes)
-  .post(notesController.addNotes)
+  .post(notesController.addNotes);
+
+router
+  .route("/NoteId")
   .patch(notesController.updateNotes)
   .delete(notesController.deleteNotes);
 

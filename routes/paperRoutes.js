@@ -6,13 +6,15 @@ const paperController = require("./../controllers/paperController");
 // router.route('/:paper')
 // .get()
 
-router.route("/:teacherId").get(paperController.getPapers);
+router.route("/").post(paperController.addPaper);
 
 router
-  .route("/paper/:paper")
+  .route("/:paperId")
   .get(paperController.getPaper)
-  .post(paperController.addPaper)
+  // .post(paperController.addPaper)
   .patch(paperController.updatePaper)
   .delete(paperController.deletePaper);
+
+router.route("/teacher/:teacherId").get(paperController.getPapers);
 
 module.exports = router;
