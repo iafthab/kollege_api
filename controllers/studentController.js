@@ -17,7 +17,6 @@ const getStudentsList = asyncHandler(async (req, res) => {
     .select("students")
     .populate({ path: "students", select: "name" })
     .exec();
-  console.log(students);
   if (!students?.length) {
     return res.status(400).json({ message: "No Students Found" });
   }

@@ -5,15 +5,15 @@ const notesController = require("./../controllers/notesController");
 // TODO Student Side
 // router.route('/paper')
 // .get()
+router
+  .route("/:noteId")
+  .get(notesController.getNote)
+  .patch(notesController.updateNotes)
+  .delete(notesController.deleteNotes);
 
 router
   .route("/paper/:paperId")
   .get(notesController.getNotes)
   .post(notesController.addNotes);
-
-router
-  .route("/NoteId")
-  .patch(notesController.updateNotes)
-  .delete(notesController.deleteNotes);
 
 module.exports = router;

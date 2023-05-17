@@ -5,10 +5,18 @@ const bcrypt = require("bcrypt");
 // @desc Get all Teachers
 // @route GET /Teachers
 // @access Private
-const getAllTeachers = asyncHandler(async (req, res) => {
-  const teachers = await Teacher.find().select("-password").lean();
+const getNewTeachers = asyncHandler(async (req, res) => {
+  if (!req?.params?.Department)
+    return res.status(400).json({ message: "Params Missing" });
+
+  const teachers = await Teacher.find({
+    department: req.params.Department,
+    roles: [],
+  })
+    .select("-password")
+    .lean();
   if (!teachers?.length) {
-    return res.status(400).json({ message: "No Teacher(s) Found" });
+    return res.status(404).json({ message: "No Registered Teacher(s) Found." });
   }
   res.json(teachers);
 });
@@ -78,62 +86,28 @@ const createNewTeacher = asyncHandler(async (req, res) => {
 // @desc Update Teacher
 // @route PATCH /Teacher
 // @access Private
-const updateTeacher = asyncHandler(async (req, res) => {
-  const {
-    id,
-    username,
-    name,
-    email,
-    qualification,
-    department,
-    password,
-    roles,
-  } = req.body;
+const approveTeacher = asyncHandler(async (req, res) => {
+  const { id, roles } = req.body;
 
   // Confirm Data
-  if (
-    !id ||
-    !username ||
-    !name ||
-    !email ||
-    !qualification ||
-    !department ||
-    !Array.isArray(roles) ||
-    !roles.length
-  ) {
+  if ((!id, !roles)) {
     return res.status(400).json({ message: "All fields are required" });
   }
-
   // Find Teacher
   const teacher = await Teacher.findById(id).exec();
-
   if (!teacher) {
     return res.status(400).json({ message: "User not found" });
   }
 
-  // Check for duplicate
-  const duplicate = await Teacher.findOne({ username }).lean().exec();
-
-  // Allow Updates to original
-  if (duplicate && duplicate?._id.toString() !== id) {
-    return res.status(409).json({ message: "Duplicate Username" });
-  }
-
-  teacher.username = username;
-  teacher.name = name;
-  teacher.email = email;
-  teacher.qualification = qualification;
-  teacher.department = department;
   teacher.roles = roles;
 
-  if (password) {
-    // Hash Pwd
-    teacher.password = await bcrypt.hash(password, 10);
-  }
-
+  // if (password) {
+  //   // Hash Pwd
+  //   teacher.password = await bcrypt.hash(password, 10);
+  // }
   await teacher.save();
 
-  res.json({ message: "User Updated" });
+  res.json({ message: "Teacher Approved" });
 });
 
 // @desc Delete Teacher
@@ -158,9 +132,9 @@ const deleteTeacher = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-  getAllTeachers,
+  getNewTeachers,
   getTeacherList,
   createNewTeacher,
-  updateTeacher,
+  approveTeacher,
   deleteTeacher,
 };

@@ -23,14 +23,13 @@ const teacherSchema = new mongoose.Schema({
     required: true,
   },
   password: {
-    // username+12
     type: String,
     required: true,
   },
   roles: [
     {
       type: String,
-      default: "Teacher",
+      default: [],
     },
   ],
 });

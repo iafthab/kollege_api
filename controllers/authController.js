@@ -16,11 +16,17 @@ const login = asyncHandler(async (req, res) => {
   if (!teacher) {
     return res.status(404).json({ message: "User not found" });
   }
+  if (!teacher.roles.length) {
+    return res.status(418).json({ message: "User not Approved" });
+  }
 
   const match = await bcrypt.compare(password, teacher.password);
   if (!match) return res.status(401).json({ message: "Unauthorized" });
   else {
-    res.status(200).json(teacher);
+    const isHOD = teacher.roles.includes("HOD");
+    res
+      .status(200)
+      .json({ _id: teacher.id, isHOD, department: teacher.department });
   }
 });
 

@@ -3,12 +3,12 @@ const router = express.Router();
 const teacherController = require("./../controllers/teacherController");
 
 router.route("/list").get(teacherController.getTeacherList);
+router.route("/approve/:Department").get(teacherController.getNewTeachers);
 
 router
   .route("/")
-  .get(teacherController.getAllTeachers)
   .post(teacherController.createNewTeacher)
-  .patch(teacherController.updateTeacher)
+  .patch(teacherController.approveTeacher)
   .delete(teacherController.deleteTeacher);
 
 module.exports = router;

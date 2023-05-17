@@ -19,7 +19,7 @@ const getAttendance = async (req, res) => {
     .exec();
   if (!attendance) {
     return res.status(404).json({
-      message: `No Attendance Record found. Add New`,
+      message: `No Record found. Add New Record`,
     });
   }
   res.json(attendance);
