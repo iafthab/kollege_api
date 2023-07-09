@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 // @access Public
 const login = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
+  console.log(new Date());
 
   if (!username || !password) {
     return res.status(400).json({ message: "All Fields are required" });
@@ -27,6 +28,7 @@ const login = asyncHandler(async (req, res) => {
     res
       .status(200)
       .json({ _id: teacher.id, isHOD, department: teacher.department });
+    console.log(new Date());
   }
 });
 

@@ -102,7 +102,7 @@ const updateInternal = asyncHandler(async (req, res) => {
 // @route DELETE /Teacher
 // @access Private
 const deleteInternal = asyncHandler(async (req, res) => {
-  const { id } = req.body;
+  const id = req.params.paper;
 
   if (!id) {
     return res.status(400).json({ message: "Internal ID required" });

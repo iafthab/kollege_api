@@ -77,7 +77,7 @@ const createNewTeacher = asyncHandler(async (req, res) => {
   console.log(teacher);
 
   if (teacher) {
-    res.status(201).json({ message: `New Teacher ${username} created` });
+    res.status(201).json({ message: `New Teacher ${username} Registered` });
   } else {
     res.status(400).json({ message: "Invalid data received" });
   }
@@ -114,7 +114,7 @@ const approveTeacher = asyncHandler(async (req, res) => {
 // @route DELETE /Teacher
 // @access Private
 const deleteTeacher = asyncHandler(async (req, res) => {
-  const { id } = req.body;
+  const id = req.params.id;
 
   if (!id) {
     return res.status(400).json({ message: "Teacher ID required" });
