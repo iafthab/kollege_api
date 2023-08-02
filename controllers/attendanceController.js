@@ -19,7 +19,29 @@ const getAttendance = async (req, res) => {
     .exec();
   if (!attendance) {
     return res.status(404).json({
-      message: `No Record found. Add New Record`,
+      message: `No Existing Record(s) found. Add New Record.`,
+    });
+  }
+  res.json(attendance);
+};
+
+// @desc Get Attendance Student
+// @route GET /attendance/student/date
+// @access Everyone
+const getAttendanceStudent = async (req, res) => {
+  if (!req?.params?.studentId || !req?.params?.date) {
+    return res
+      .status(400)
+      .json({ message: "Incomplete Request: Params Missing" });
+  }
+  const attendance = await Attendance.find({
+    date: req.params.date,
+  })
+    // .populate({ path: "attendance.student", select: "name" })
+    .exec();
+  if (!attendance) {
+    return res.status(404).json({
+      message: `No Existing Record(s) found. Add New Record.`,
     });
   }
   res.json(attendance);
@@ -140,6 +162,7 @@ const deleteAttendance = asyncHandler(async (req, res) => {
 
 module.exports = {
   getAttendance,
+  getAttendanceStudent,
   addAttendance,
   updateAttendance,
   deleteAttendance,

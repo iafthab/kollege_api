@@ -1,26 +1,45 @@
 const Student = require("./../models/Student");
-const Paper = require("./../models/Paper");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 
 // @desc Get all Student
-// @route GET /Student/list/:paperId
+// @route GET /Student
 // @access Private
-const getStudentsList = asyncHandler(async (req, res) => {
-  if (!req?.params?.paperId) {
+const getStudent = asyncHandler(async (req, res) => {
+  if (!req?.params?.id) return res.status(400).json({ message: "ID Missing" });
+
+  const student = await Student.findById(req.params.id)
+    .select("-password")
+    .exec();
+  if (!student?.length) {
     return res
       .status(400)
-      .json({ message: "Incomplete Request: Params Missing" });
+      .json({ message: "Student Not Found. I understand. but why?" });
   }
+  res.json(student);
+});
 
-  const students = await Paper.find({ _id: req.params.paperId })
-    .select("students")
-    .populate({ path: "students", select: "name" })
-    .exec();
-  if (!students?.length) {
-    return res.status(400).json({ message: "No Students Found" });
+// @desc Get Papers for each Student
+// @route GET /Paper/student/:studentId
+// @access Everyone
+const getPapersStudent = asyncHandler(async (req, res) => {
+  if (!req?.params?.studentId) {
+    return res.status(400).json({ message: "Student ID Missing" });
   }
-  res.json(students);
+  const papers = await Student.findById(req.params.studentId)
+    .select("papers")
+    .populate({
+      path: "papers",
+      model: "Paper",
+      select: "-students",
+    })
+    .exec();
+  if (!papers) {
+    return res.status(404).json({
+      message: `No Paper(s) found`,
+    });
+  }
+  res.json(papers.papers);
 });
 
 // @desc Get all Student
@@ -78,10 +97,10 @@ const createNewStudent = asyncHandler(async (req, res) => {
 // @route PATCH /Student
 // @access Private
 const updateStudent = asyncHandler(async (req, res) => {
-  const { papers, name, email, username, password } = req.body;
+  const { id, papers, name, email, username, password } = req.body;
 
   // Confirm Data
-  if (!name || !email || !username) {
+  if (!id || !name || !email || !username) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -137,8 +156,9 @@ const deleteStudent = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-  getStudentsList,
+  getStudent,
   getAllStudents,
+  getPapersStudent,
   createNewStudent,
   updateStudent,
   deleteStudent,

@@ -13,7 +13,7 @@ const getTimeSchedule = async (req, res) => {
   }).exec();
   if (!timeSchedule) {
     return res.status(404).json({
-      message: `No TimeSchedule found for ${req.params.id}`,
+      message: `Time Schedule not found`,
     });
   }
   res.json(timeSchedule);
@@ -54,7 +54,7 @@ const addTimeSchedule = asyncHandler(async (req, res) => {
 
   if (record) {
     res.status(201).json({
-      message: `TimeSchedule added successfully`,
+      message: `Time Schedule added successfully`,
     });
   } else {
     res.status(400).json({ message: "Invalid data received" });
@@ -95,7 +95,7 @@ const updateTimeSchedule = asyncHandler(async (req, res) => {
 
   const save = await record.save();
   if (save) {
-    res.json({ message: `Schedule Updated` });
+    res.json({ message: `Time Schedule Updated` });
   } else {
     res.json({ message: "Save Failed" });
   }

@@ -15,13 +15,54 @@ const getPapers = asyncHandler(async (req, res) => {
     .exec();
   if (!papers) {
     return res.status(404).json({
-      message: `No Paper found for ${req.params.teacherId}`,
+      message: `No Paper(s) found`,
     });
   }
   res.json(papers);
 });
 
-// @desc Get Paper for each Paper
+// @desc Get Papers for each Teacher
+// @route GET /paper/
+// @access Everyone
+const getAllPapers = asyncHandler(async (req, res) => {
+  const papers = await Paper.find()
+    .select("-students")
+    .populate({
+      path: "teacher",
+      model: "Teacher",
+      select: "name",
+    })
+    .exec();
+  if (!papers) {
+    return res.status(404).json({
+      message: `No Paper(s) found`,
+    });
+  }
+  res.json(papers);
+});
+
+// @desc Get Students for each paper
+// @route GET /paper/students/:paperId
+// @access Private
+const getStudentsList = asyncHandler(async (req, res) => {
+  if (!req?.params?.paperId) {
+    return res
+      .status(400)
+      .json({ message: "Incomplete Request: Params Missing" });
+  }
+
+  const students = await Paper.findById(req.params.paperId)
+    .select("students")
+    .populate({ path: "students", select: "name" })
+    .exec();
+  console.log(students);
+  if (!students?.students) {
+    return res.status(400).json({ message: "No Students Found" });
+  }
+  res.json(students.students);
+});
+
+// @desc Get Paper
 // @route GET /Paper
 // @access Everyone
 const getPaper = asyncHandler(async (req, res) => {
@@ -38,7 +79,7 @@ const getPaper = asyncHandler(async (req, res) => {
     .exec();
   if (!paper) {
     return res.status(404).json({
-      message: `No Paper found for ${req.params.paperId}`,
+      message: `No Paper(s) found`,
     });
   }
   res.json(paper);
@@ -69,7 +110,7 @@ const addPaper = asyncHandler(async (req, res) => {
     .exec();
 
   if (duplicate) {
-    return res.status(409).json({ message: "Paper record already exists" });
+    return res.status(409).json({ message: "Paper already exists" });
   }
 
   const PaperObj = {
@@ -88,7 +129,7 @@ const addPaper = asyncHandler(async (req, res) => {
 
   if (record) {
     res.status(201).json({
-      message: `Paper added for ${req.body.paper}`,
+      message: `New Paper ${req.body.paper} added `,
     });
   } else {
     res.status(400).json({ message: "Invalid data received" });
@@ -126,24 +167,15 @@ const updatePaper = asyncHandler(async (req, res) => {
     return res.status(409).json({ message: "Duplicate Paper" });
   }
 
+  record.students = students;
   record.department = department;
   record.paper = paper;
-  record.students = students;
   record.teacher = teacher;
 
-  await Paper.find({ teacher: record.teacher })
-    .populate("teacher", "name")
-    .exec();
-  await Paper.find({ _id: id })
-    .populate({
-      path: "students",
-      model: "Student",
-    })
-    .exec();
   const save = await record.save();
   if (save) {
     res.json({
-      message: `Paper Updated`,
+      message: `${paper} Updated`,
     });
   } else {
     res.json({ message: "Save Failed" });
@@ -168,13 +200,15 @@ const deletePaper = asyncHandler(async (req, res) => {
 
   await record.deleteOne();
 
-  res.json({ message: `Paper deleted` });
+  res.json({ message: `${paper} deleted` });
 });
 
 module.exports = {
-  getPapers,
-  getPaper,
   addPaper,
+  getAllPapers,
+  getPapers,
+  getStudentsList,
+  getPaper,
   updatePaper,
   deletePaper,
 };

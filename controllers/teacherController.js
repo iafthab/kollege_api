@@ -2,15 +2,32 @@ const Teacher = require("./../models/Teacher");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 
+// @desc Get Teacher
+// @route GET /teacher
+// @access Private
+const getTeacher = asyncHandler(async (req, res) => {
+  if (!req?.params?.id) return res.status(400).json({ message: "ID Missing" });
+
+  const teacher = await Teacher.find({
+    _id: req.params.id,
+  })
+    .select("-password")
+    .lean();
+  if (!teacher?.length) {
+    return res.status(404).json({ message: "No Teacher Found." });
+  }
+  res.json(teacher);
+});
+
 // @desc Get all Teachers
 // @route GET /Teachers
 // @access Private
 const getNewTeachers = asyncHandler(async (req, res) => {
-  if (!req?.params?.Department)
+  if (!req?.params?.department)
     return res.status(400).json({ message: "Params Missing" });
 
   const teachers = await Teacher.find({
-    department: req.params.Department,
+    department: req.params.department,
     roles: [],
   })
     .select("-password")
@@ -25,7 +42,14 @@ const getNewTeachers = asyncHandler(async (req, res) => {
 // @route GET /TeachersList
 // @access Private
 const getTeacherList = asyncHandler(async (req, res) => {
-  const teachersList = await Teacher.find().select("name").lean();
+  if (!req?.params?.department)
+    return res.status(400).json({ message: "Params Missing" });
+
+  const teachersList = await Teacher.find({
+    department: req.params.department,
+  })
+    .select("name")
+    .lean();
   if (!teachersList?.length) {
     return res.status(400).json({ message: "No Teacher(s) Found" });
   }
@@ -132,6 +156,7 @@ const deleteTeacher = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getTeacher,
   getNewTeachers,
   getTeacherList,
   createNewTeacher,

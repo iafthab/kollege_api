@@ -10,6 +10,9 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  course: {
+    type: String,
+  },
   papers: [
     {
       type: mongoose.Schema.Types.ObjectId,

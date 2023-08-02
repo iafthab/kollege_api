@@ -15,7 +15,27 @@ const getInternal = async (req, res) => {
   }).exec();
   if (!internal) {
     return res.status(404).json({
-      message: "No Existing Records found. Add New Records",
+      message: "No Existing Record(s) found. Add New Record.",
+    });
+  }
+  res.json(internal);
+};
+
+// @desc Get Internal Result
+// @route GET /internal/:studentId
+// @access Everyone
+const getInternalStudent = async (req, res) => {
+  if (!req?.params?.studentId) {
+    return res
+      .status(400)
+      .json({ message: "Incomplete Request: Params Missing" });
+  }
+  const internal = await Internal.find({
+    paper: req.params.paper,
+  }).exec();
+  if (!internal) {
+    return res.status(404).json({
+      message: "No Existing Record(s) found. Add New Record.",
     });
   }
   res.json(internal);

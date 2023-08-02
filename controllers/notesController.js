@@ -62,7 +62,7 @@ const addNotes = asyncHandler(async (req, res) => {
     .exec();
 
   if (duplicate) {
-    return res.status(409).json({ message: "Notes record already exists" });
+    return res.status(409).json({ message: "Note already exists" });
   }
 
   const NotesObj = {
@@ -98,7 +98,7 @@ const updateNotes = asyncHandler(async (req, res) => {
   const record = await Notes.findById(req.params.noteId).exec();
 
   if (!record) {
-    return res.status(404).json({ message: "Notes record doesn't exist" });
+    return res.status(404).json({ message: "Note doesn't exist" });
   }
 
   record.title = title;

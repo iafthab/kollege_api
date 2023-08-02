@@ -3,8 +3,9 @@ const router = express.Router();
 const attendanceController = require("./../controllers/attendanceController");
 
 // TODO Student Side
-// router.route('/:date')
-// .get()
+router
+  .route("/student/:studentId/:date")
+  .get(attendanceController.getAttendanceStudent);
 
 router
   .route("/:paper/:date/:hour")
