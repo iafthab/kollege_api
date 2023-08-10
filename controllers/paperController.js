@@ -1,3 +1,4 @@
+const { mongoose } = require("mongoose");
 const Paper = require("./../models/Paper");
 const asyncHandler = require("express-async-handler");
 
@@ -21,18 +22,82 @@ const getPapers = asyncHandler(async (req, res) => {
   res.json(papers);
 });
 
-// @desc Get Papers for each Teacher
+// @desc Get Papers for each Student
+// @route GET /paper/student/:studentId
+// @access Everyone
+const getPapersStudent = asyncHandler(async (req, res) => {
+  if (!req?.params?.studentId) {
+    return res.status(400).json({ message: "Student ID Missing" });
+  }
+  const papers = await Paper.aggregate([
+    {
+      $lookup: {
+        from: "teachers",
+        localField: "teacher",
+        foreignField: "_id",
+        as: "teacher",
+      },
+    },
+    {
+      $unwind: "$teacher",
+    },
+    {
+      $project: {
+        students: {
+          $in: [new mongoose.Types.ObjectId(req.params.studentId), "$students"],
+        },
+        semester: 1,
+        year: 1,
+        paper: 1,
+        "teacher.name": 1,
+      },
+    },
+    {
+      $match: { students: true },
+    },
+  ]);
+  if (!papers) {
+    return res.status(404).json({
+      message: `No Paper(s) found`,
+    });
+  }
+  res.json(papers);
+});
+
+// @desc Get All Papers
 // @route GET /paper/
 // @access Everyone
 const getAllPapers = asyncHandler(async (req, res) => {
-  const papers = await Paper.find()
-    .select("-students")
-    .populate({
-      path: "teacher",
-      model: "Teacher",
-      select: "name",
-    })
-    .exec();
+  if (!req?.params?.studentId) {
+    return res.status(400).json({ message: "Student ID Missing" });
+  }
+
+  const papers = await Paper.aggregate([
+    {
+      $lookup: {
+        from: "teachers",
+        localField: "teacher",
+        foreignField: "_id",
+        as: "teacher",
+      },
+    },
+    {
+      $unwind: "$teacher",
+    },
+    {
+      $project: {
+        semester: 1,
+        year: 1,
+        paper: 1,
+        "teacher.name": 1,
+        students: 1,
+        department: 1,
+        joined: {
+          $in: [new mongoose.Types.ObjectId(req.params.studentId), "$students"],
+        },
+      },
+    },
+  ]);
   if (!papers) {
     return res.status(404).json({
       message: `No Paper(s) found`,
@@ -55,7 +120,6 @@ const getStudentsList = asyncHandler(async (req, res) => {
     .select("students")
     .populate({ path: "students", select: "name" })
     .exec();
-  console.log(students);
   if (!students?.students) {
     return res.status(400).json({ message: "No Students Found" });
   }
@@ -89,15 +153,14 @@ const getPaper = asyncHandler(async (req, res) => {
 // @route POST /Paper
 // @access Private
 const addPaper = asyncHandler(async (req, res) => {
-  console.log(req.body);
   const { department, semester, year, paper, students, teacher } = req.body;
 
-  // // Confirm Data
-  // if (!department || !paper) {
-  //   return res
-  //     .status(400)
-  //     .json({ message: "Incomplete Request: Fields Missing" });
-  // }
+  // Confirm Data
+  if (!department || !paper || !semester || !year || !students || !teacher) {
+    return res
+      .status(400)
+      .json({ message: "Incomplete Request: Fields Missing" });
+  }
 
   // Check for Duplicates
   const duplicate = await Paper.findOne({
@@ -121,11 +184,9 @@ const addPaper = asyncHandler(async (req, res) => {
     students,
     teacher,
   };
-  console.log(PaperObj);
 
   // Create and Store New teacher
   const record = await Paper.create(PaperObj);
-  console.log(record);
 
   if (record) {
     res.status(201).json({
@@ -139,11 +200,11 @@ const addPaper = asyncHandler(async (req, res) => {
 // @desc Update Paper
 // @route PATCH /Paper
 // @access Private
-const updatePaper = asyncHandler(async (req, res) => {
-  const { id, department, paper, students, teacher } = req.body;
+const updateStudents = asyncHandler(async (req, res) => {
+  const { id, students } = req.body;
 
   // Confirm Data
-  if (!id || !department || !paper || !students || !teacher) {
+  if (!id || !students) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -154,29 +215,11 @@ const updatePaper = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Paper doesn't exist" });
   }
 
-  //! Needs Testing
-  // Check for duplicate
-  const duplicate = await Paper.findOne({
-    paper: req.params.paperId,
-  })
-    .lean()
-    .exec();
-
-  //   Allow Updates to original
-  if (duplicate && duplicate?._id.toString() !== id) {
-    return res.status(409).json({ message: "Duplicate Paper" });
-  }
-
   record.students = students;
-  record.department = department;
-  record.paper = paper;
-  record.teacher = teacher;
 
   const save = await record.save();
   if (save) {
-    res.json({
-      message: `${paper} Updated`,
-    });
+    res.json({ message: "Updated" });
   } else {
     res.json({ message: "Save Failed" });
   }
@@ -207,8 +250,9 @@ module.exports = {
   addPaper,
   getAllPapers,
   getPapers,
+  getPapersStudent,
   getStudentsList,
   getPaper,
-  updatePaper,
+  updateStudents,
   deletePaper,
 };

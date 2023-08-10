@@ -1,10 +1,11 @@
+const { default: mongoose } = require("mongoose");
 const Internal = require("./../models/Internal");
 const asyncHandler = require("express-async-handler");
 
 // @desc Get Internal Result
 // @route GET /internal/:paper
 // @access Everyone
-const getInternal = async (req, res) => {
+const getInternal = asyncHandler(async (req, res) => {
   if (!req?.params?.paper) {
     return res
       .status(400)
@@ -19,27 +20,57 @@ const getInternal = async (req, res) => {
     });
   }
   res.json(internal);
-};
+});
 
 // @desc Get Internal Result
-// @route GET /internal/:studentId
+// @route GET /internal/student/:studentId
 // @access Everyone
-const getInternalStudent = async (req, res) => {
+const getInternalStudent = asyncHandler(async (req, res) => {
   if (!req?.params?.studentId) {
     return res
       .status(400)
       .json({ message: "Incomplete Request: Params Missing" });
   }
-  const internal = await Internal.find({
-    paper: req.params.paper,
-  }).exec();
-  if (!internal) {
+  const internal = await Internal.aggregate([
+    {
+      $lookup: {
+        from: "paper",
+        localField: "paper",
+        foreignField: "_id",
+        as: "paper",
+      },
+    },
+    {
+      $unwind: "$paper",
+    },
+    {
+      $project: {
+        marks: {
+          $filter: {
+            input: "$marks",
+            as: "mark",
+            cond: {
+              $eq: [
+                "$$mark._id",
+                new mongoose.Types.ObjectId(req.params.studentId),
+              ],
+            },
+          },
+        },
+        "paper.paper": 1,
+      },
+    },
+    {
+      $unwind: "$marks",
+    },
+  ]);
+  if (!internal.length) {
     return res.status(404).json({
-      message: "No Existing Record(s) found. Add New Record.",
+      message: "No Records Found.",
     });
   }
   res.json(internal);
-};
+});
 
 // @desc Add Internal
 // @route POST /Internal
@@ -141,6 +172,7 @@ const deleteInternal = asyncHandler(async (req, res) => {
 
 module.exports = {
   getInternal,
+  getInternalStudent,
   addInternal,
   updateInternal,
   deleteInternal,

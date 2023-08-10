@@ -8,8 +8,6 @@ router
   .patch(studentController.updateStudent)
   .delete(studentController.deleteStudent);
 
-router.route("/papers/:studentId").get(studentController.getPapersStudent);
-
 router
   .route("/")
   .get(studentController.getAllStudents)

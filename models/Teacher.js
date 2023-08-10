@@ -26,12 +26,10 @@ const teacherSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  roles: [
-    {
-      type: String,
-      default: [],
-    },
-  ],
+  role: {
+    type: String,
+    default: "",
+  },
 });
 
 module.exports = mongoose.model("Teacher", teacherSchema);

@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Attendance = require("./../models/Attendance");
 const asyncHandler = require("express-async-handler");
 
@@ -28,24 +29,64 @@ const getAttendance = async (req, res) => {
 // @desc Get Attendance Student
 // @route GET /attendance/student/date
 // @access Everyone
-const getAttendanceStudent = async (req, res) => {
+const getAttendanceStudent = asyncHandler(async (req, res) => {
   if (!req?.params?.studentId || !req?.params?.date) {
     return res
       .status(400)
       .json({ message: "Incomplete Request: Params Missing" });
   }
-  const attendance = await Attendance.find({
-    date: req.params.date,
-  })
-    // .populate({ path: "attendance.student", select: "name" })
-    .exec();
-  if (!attendance) {
+  const attendance = await Attendance.aggregate([
+    { $match: { date: req.params.date } },
+    {
+      $lookup: {
+        from: "paper",
+        localField: "paper",
+        foreignField: "_id",
+        as: "paper",
+      },
+    },
+    {
+      $unwind: "$paper",
+    },
+    {
+      $project: {
+        attendance: {
+          $filter: {
+            input: "$attendance",
+            as: "att",
+            cond: {
+              $eq: [
+                "$$att.student",
+                new mongoose.Types.ObjectId(req.params.studentId),
+              ],
+            },
+          },
+        },
+        "paper.paper": 1,
+        hour: 1,
+      },
+    },
+    {
+      $unwind: "$attendance",
+    },
+    {
+      $project: {
+        "attendance.student": 0,
+        "attendance._id": 0,
+        _id: 0,
+      },
+    },
+    {
+      $sort: { hour: 1 },
+    },
+  ]);
+  if (!attendance.length) {
     return res.status(404).json({
-      message: `No Existing Record(s) found. Add New Record.`,
+      message: "No Records found.",
     });
   }
   res.json(attendance);
-};
+});
 
 // @desc Add Attendance
 // @route POST /attendance

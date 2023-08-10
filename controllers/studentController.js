@@ -9,37 +9,12 @@ const getStudent = asyncHandler(async (req, res) => {
   if (!req?.params?.id) return res.status(400).json({ message: "ID Missing" });
 
   const student = await Student.findById(req.params.id)
-    .select("-password")
+    .select("-password -_id -__v")
     .exec();
-  if (!student?.length) {
-    return res
-      .status(400)
-      .json({ message: "Student Not Found. I understand. but why?" });
+  if (!student) {
+    return res.status(400).json({ message: "Student Not Found." });
   }
   res.json(student);
-});
-
-// @desc Get Papers for each Student
-// @route GET /Paper/student/:studentId
-// @access Everyone
-const getPapersStudent = asyncHandler(async (req, res) => {
-  if (!req?.params?.studentId) {
-    return res.status(400).json({ message: "Student ID Missing" });
-  }
-  const papers = await Student.findById(req.params.studentId)
-    .select("papers")
-    .populate({
-      path: "papers",
-      model: "Paper",
-      select: "-students",
-    })
-    .exec();
-  if (!papers) {
-    return res.status(404).json({
-      message: `No Paper(s) found`,
-    });
-  }
-  res.json(papers.papers);
 });
 
 // @desc Get all Student
@@ -47,7 +22,6 @@ const getPapersStudent = asyncHandler(async (req, res) => {
 // @access Private
 const getAllStudents = asyncHandler(async (req, res) => {
   const students = await Student.find().select("-password").lean();
-  console.log(students);
   if (!students?.length) {
     return res.status(400).json({ message: "No Students Found" });
   }
@@ -58,10 +32,10 @@ const getAllStudents = asyncHandler(async (req, res) => {
 // @route POST /Student
 // @access Private
 const createNewStudent = asyncHandler(async (req, res) => {
-  const { papers, name, email, username, password } = req.body;
+  const { name, course, email, username, password } = req.body;
 
   // Confirm Data
-  if (!name || !email || !password) {
+  if (!name || !email || !course || !username || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -76,8 +50,8 @@ const createNewStudent = asyncHandler(async (req, res) => {
   const hashedPwd = await bcrypt.hash(password, 10); // salt rounds
 
   const studentObj = {
-    papers,
     name,
+    course,
     email,
     username,
     password: hashedPwd,
@@ -97,7 +71,7 @@ const createNewStudent = asyncHandler(async (req, res) => {
 // @route PATCH /Student
 // @access Private
 const updateStudent = asyncHandler(async (req, res) => {
-  const { id, papers, name, email, username, password } = req.body;
+  const { id, name, email, username, password } = req.body;
 
   // Confirm Data
   if (!id || !name || !email || !username) {
@@ -122,7 +96,6 @@ const updateStudent = asyncHandler(async (req, res) => {
   student.name = name;
   student.email = email;
   student.username = username;
-  student.papers = papers;
 
   if (password) {
     // Hash Pwd
@@ -158,7 +131,6 @@ const deleteStudent = asyncHandler(async (req, res) => {
 module.exports = {
   getStudent,
   getAllStudents,
-  getPapersStudent,
   createNewStudent,
   updateStudent,
   deleteStudent,

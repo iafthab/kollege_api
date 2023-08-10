@@ -50,7 +50,6 @@ const addTimeSchedule = asyncHandler(async (req, res) => {
 
   // Create and Store New Time Schedule
   const record = await TimeSchedule.create(TimeScheduleObj);
-  console.log(record);
 
   if (record) {
     res.status(201).json({

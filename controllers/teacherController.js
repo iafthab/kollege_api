@@ -8,12 +8,10 @@ const bcrypt = require("bcrypt");
 const getTeacher = asyncHandler(async (req, res) => {
   if (!req?.params?.id) return res.status(400).json({ message: "ID Missing" });
 
-  const teacher = await Teacher.find({
-    _id: req.params.id,
-  })
-    .select("-password")
+  const teacher = await Teacher.findById(req.params.id)
+    .select("-password -_id -__v")
     .lean();
-  if (!teacher?.length) {
+  if (!teacher) {
     return res.status(404).json({ message: "No Teacher Found." });
   }
   res.json(teacher);
@@ -62,7 +60,6 @@ const getTeacherList = asyncHandler(async (req, res) => {
 const createNewTeacher = asyncHandler(async (req, res) => {
   const { username, name, email, qualification, department, password, roles } =
     req.body;
-  console.log(req.body);
 
   // Confirm Data
   if (
@@ -98,7 +95,6 @@ const createNewTeacher = asyncHandler(async (req, res) => {
 
   // Create and Store New teacher
   const teacher = await Teacher.create(teacherObj);
-  console.log(teacher);
 
   if (teacher) {
     res.status(201).json({ message: `New Teacher ${username} Registered` });

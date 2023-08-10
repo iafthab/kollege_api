@@ -12,14 +12,8 @@ const studentSchema = new mongoose.Schema({
   },
   course: {
     type: String,
+    required: true,
   },
-  papers: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Paper",
-      default: [],
-    },
-  ],
   username: {
     type: String,
     required: true,

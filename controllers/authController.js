@@ -17,19 +17,17 @@ const teacherLogin = asyncHandler(async (req, res) => {
   if (!teacher) {
     return res.status(404).json({ message: "User not found" });
   }
-  if (!teacher.roles.length) {
+  if (!teacher.role) {
     return res.status(418).json({ message: "User not Approved" });
   }
 
   const match = await bcrypt.compare(password, teacher.password);
   if (!match) return res.status(401).json({ message: "Incorrect Password" });
   else {
-    const role = teacher.roles.includes("HOD") ? "HOD" : "teacher";
-
     res.status(200).json({
       _id: teacher.id,
       name: teacher.name,
-      role,
+      role: teacher.role,
       department: teacher.department,
     });
   }
