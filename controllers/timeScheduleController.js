@@ -1,15 +1,15 @@
 const TimeSchedule = require("./../models/TimeSchedule");
 const asyncHandler = require("express-async-handler");
 
-// @desc Get TimeSchedule for each Teacher
+// @desc Get TimeSchedule for each User
 // @route GET /TimeSchedule
 // @access Everyone
 const getTimeSchedule = async (req, res) => {
-  if (!req?.params?.teacher_id) {
+  if (!req?.params?.user_id) {
     return res.status(400).json({ message: "ID Required" });
   }
   const timeSchedule = await TimeSchedule.findOne({
-    teacher: req.params.teacher_id,
+    user: req.params.user_id,
   }).exec();
   if (!timeSchedule) {
     return res.status(404).json({
@@ -23,10 +23,10 @@ const getTimeSchedule = async (req, res) => {
 // @route POST /time_Schedule
 // @access Private
 const addTimeSchedule = asyncHandler(async (req, res) => {
-  const { teacher, schedule } = req.body;
+  const { user, schedule } = req.body;
 
   // Confirm Data
-  if (!teacher || !schedule) {
+  if (!user || !schedule) {
     return res
       .status(400)
       .json({ message: "Incomplete Request: Fields Missing" });
@@ -34,7 +34,7 @@ const addTimeSchedule = asyncHandler(async (req, res) => {
 
   // Check for Duplicates
   const duplicate = await TimeSchedule.findOne({
-    teacher: teacher,
+    user: user,
   })
     .lean()
     .exec();
@@ -44,7 +44,7 @@ const addTimeSchedule = asyncHandler(async (req, res) => {
   }
 
   const TimeScheduleObj = {
-    teacher,
+    user,
     schedule,
   };
 
@@ -64,15 +64,15 @@ const addTimeSchedule = asyncHandler(async (req, res) => {
 // @route PATCH /TimeSchedule
 // @access Private
 const updateTimeSchedule = asyncHandler(async (req, res) => {
-  const { teacher, schedule } = req.body;
+  const { user, schedule } = req.body;
 
   // Confirm Data
-  if (!teacher || !schedule) {
+  if (!user || !schedule) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   // Find Record
-  const record = await TimeSchedule.findOne({ teacher: teacher }).exec();
+  const record = await TimeSchedule.findOne({ user: user }).exec();
 
   if (!record) {
     return res.status(404).json({ message: "Time Schedule doesn't exist" });
@@ -80,7 +80,7 @@ const updateTimeSchedule = asyncHandler(async (req, res) => {
 
   // // Check for duplicate
   // const duplicate = await TimeSchedule.findOne({
-  //   teacher_id: req.params.teacher_id,
+  //   user_id: req.params.user_id,
   // })
   //   .lean()
   //   .exec();
@@ -104,11 +104,11 @@ const updateTimeSchedule = asyncHandler(async (req, res) => {
 // @route DELETE /time_schedule
 // @access Private
 const deleteTimeSchedule = asyncHandler(async (req, res) => {
-  if (!req?.params?.teacher_id) {
+  if (!req?.params?.user_id) {
     return res.status(400).json({ message: "ID Required" });
   }
 
-  const record = await TimeSchedule.findById(req.params.teacher_id).exec();
+  const record = await TimeSchedule.findById(req.params.user_id).exec();
   if (!record) {
     return res.status(404).json({ message: "Time Schedule not found" });
   }

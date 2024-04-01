@@ -13,6 +13,7 @@ const options = {
   second: "numeric",
 };
 
+//? This was done to get myself familiar with fs module, you can remove it.
 const logEvents = async (message, logFileName) => {
   const dateTime = new Intl.DateTimeFormat("en-GB", options).format(date);
   const logItem = dateTime + "\t" + uuid() + "\t" + message + "\n";

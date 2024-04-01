@@ -98,7 +98,7 @@ const addInternal = asyncHandler(async (req, res) => {
     paper,
     marks,
   };
-  // Create and Store New teacher
+  // Create and Store New Internal Record
   const record = await Internal.create(InternalObj);
   if (record) {
     res.status(201).json({
@@ -149,8 +149,8 @@ const updateInternal = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Delete Teacher
-// @route DELETE /Teacher
+// @desc Delete Internal Record
+// @route DELETE /Internal Record
 // @access Private
 const deleteInternal = asyncHandler(async (req, res) => {
   const id = req.params.paper;

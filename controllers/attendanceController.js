@@ -123,7 +123,7 @@ const addAttendance = asyncHandler(async (req, res) => {
     attendance,
   };
 
-  // Create and Store New teacher
+  // Create and Store New Attendance Record
   const record = await Attendance.create(attendanceObj);
 
   if (record) {
@@ -154,7 +154,7 @@ const updateAttendance = asyncHandler(async (req, res) => {
   }
 
   //   // Check for duplicate
-  //   const duplicate = await Teacher.findOne({
+  //   const duplicate = await Attendance.findOne({
   //     paper: req.params.paper,
   //     date: req.params.date,
   //     hour: req.params.hour,
@@ -182,8 +182,8 @@ const updateAttendance = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Delete Teacher
-// @route DELETE /Teacher
+// @desc Delete Attendance Record
+// @route DELETE /Attendance Record
 // @access Private
 const deleteAttendance = asyncHandler(async (req, res) => {
   if (!req?.params?.id) {

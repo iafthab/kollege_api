@@ -13,9 +13,9 @@ const getNotes = async (req, res) => {
   const notes = await Notes.find({
     paper: req.params.paperId,
   }).exec();
-  if (!notes) {
+  if (!notes.length) {
     return res.status(404).json({
-      message: `No Notes found for ${req.params.paper}`,
+      message: `No Notes found`,
     });
   }
   res.json(notes);
@@ -71,7 +71,7 @@ const addNotes = asyncHandler(async (req, res) => {
     body,
   };
 
-  // Create and Store New teacher
+  // Create and Store New Note
   const record = await Notes.create(NotesObj);
 
   if (record) {
@@ -114,8 +114,8 @@ const updateNotes = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc Delete Teacher
-// @route DELETE /Teacher
+// @desc Delete Note
+// @route DELETE /Note
 // @access Private
 const deleteNotes = asyncHandler(async (req, res) => {
   if (!req.params.noteId) {

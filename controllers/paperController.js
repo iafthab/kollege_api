@@ -2,15 +2,15 @@ const { mongoose } = require("mongoose");
 const Paper = require("./../models/Paper");
 const asyncHandler = require("express-async-handler");
 
-// @desc Get Papers for each Teacher
-// @route GET /Paper/teacher/teacherId
+// @desc Get Papers for each Staff
+// @route GET /Paper/staff/staffId
 // @access Everyone
-const getPapers = asyncHandler(async (req, res) => {
-  if (!req?.params?.teacherId) {
-    return res.status(400).json({ message: "Teacher ID Missing" });
+const getPapersStaff = asyncHandler(async (req, res) => {
+  if (!req?.params?.staffId) {
+    return res.status(400).json({ message: "Staff ID Missing" });
   }
   const papers = await Paper.find({
-    teacher: req.params.teacherId,
+    teacher: req.params.staffId,
   })
     .select("-students")
     .exec();
@@ -19,6 +19,7 @@ const getPapers = asyncHandler(async (req, res) => {
       message: `No Paper(s) found`,
     });
   }
+
   res.json(papers);
 });
 
@@ -32,7 +33,7 @@ const getPapersStudent = asyncHandler(async (req, res) => {
   const papers = await Paper.aggregate([
     {
       $lookup: {
-        from: "teachers",
+        from: "staffs",
         localField: "teacher",
         foreignField: "_id",
         as: "teacher",
@@ -61,6 +62,7 @@ const getPapersStudent = asyncHandler(async (req, res) => {
       message: `No Paper(s) found`,
     });
   }
+  console.log(papers);
   res.json(papers);
 });
 
@@ -75,7 +77,7 @@ const getAllPapers = asyncHandler(async (req, res) => {
   const papers = await Paper.aggregate([
     {
       $lookup: {
-        from: "teachers",
+        from: "staffs",
         localField: "teacher",
         foreignField: "_id",
         as: "teacher",
@@ -120,7 +122,7 @@ const getStudentsList = asyncHandler(async (req, res) => {
     .select("students")
     .populate({ path: "students", select: "name" })
     .exec();
-  if (!students?.students) {
+  if (!students?.students.length) {
     return res.status(400).json({ message: "No Students Found" });
   }
   res.json(students.students);
@@ -185,7 +187,7 @@ const addPaper = asyncHandler(async (req, res) => {
     teacher,
   };
 
-  // Create and Store New teacher
+  // Create and Store New staff
   const record = await Paper.create(PaperObj);
 
   if (record) {
@@ -249,7 +251,7 @@ const deletePaper = asyncHandler(async (req, res) => {
 module.exports = {
   addPaper,
   getAllPapers,
-  getPapers,
+  getPapersStaff,
   getPapersStudent,
   getStudentsList,
   getPaper,

@@ -39,12 +39,11 @@ const daySchema = new mongoose.Schema({
   ],
 });
 
-// Time Schedule of the Teacher
+// Time Schedule of the Staff
 const timeScheduleSchema = new mongoose.Schema({
-  teacher: {
-    type: mongoose.Schema.Types.ObjectId,
+  user: {
+    type: String,
     required: true,
-    ref: "Teacher",
   },
   schedule: daySchema,
 });
