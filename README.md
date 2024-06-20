@@ -57,6 +57,7 @@ You'll need to add an HOD manually.
 
 Request Method: **POST**  
 Request Address: **<http://localhost:3500/staff>**  
+    // the port should be where you host the server, 3500 by default, and not the react port i.e, 3000
 Request Body:
 
 ```javascript

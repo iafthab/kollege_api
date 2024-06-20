@@ -95,7 +95,7 @@ const updateNotes = asyncHandler(async (req, res) => {
   }
 
   // Find Record
-  const record = await Notes.findById(req.params.noteId).exec();
+  const record = await Notes.findById(id).exec();
 
   if (!record) {
     return res.status(404).json({ message: "Note doesn't exist" });
